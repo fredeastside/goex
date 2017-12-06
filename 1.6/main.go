@@ -5,15 +5,21 @@ import (
 	"image/color"
 	"image/gif"
 	"io"
+	"os"
 	"math"
 	"math/rand"
-	"os"
 	"time"
 )
 
 var palette = []color.Color{
 	color.Black,
+	color.White,
+	color.RGBA{0xFF, 0x00, 0x00, 0xFF}, // red
 	color.RGBA{0x00, 0xFF, 0x00, 0xFF}, // green
+	color.RGBA{0x00, 0x00, 0xFF, 0xFF}, // blue
+	color.RGBA{0xFF, 0xFF, 0x00, 0xFF}, // yellow
+	color.RGBA{0x00, 0xFF, 0xFF, 0xFF}, // cyan
+	color.RGBA{0xFF, 0x00, 0xFF, 0xFF}, // magenta
 }
 
 const (
@@ -27,11 +33,11 @@ func main() {
 
 func lissajous(out io.Writer) {
 	const (
-		cycles  = 5
-		res     = 0.001
-		size    = 100
+		cycles = 5
+		res = 0.001
+		size = 100
 		nframes = 64
-		delay   = 8
+		delay = 8
 	)
 
 	rand.Seed(time.Now().UTC().UnixNano())
@@ -45,7 +51,8 @@ func lissajous(out io.Writer) {
 		for t := 0.0; t < cycles*2*math.Pi; t += res {
 			x := math.Sin(t)
 			y := math.Sin(t*freq + phase)
-			img.SetColorIndex(size+int(x*size+0.5), size+int(y*size+0.5), blackIndex)
+			index := rand.Intn(len(palette)-1) + 1
+			img.SetColorIndex(size+int(x*size+0.5), size+int(y*size+0.5), uint8(index))
 		}
 		phase += 0.1
 		anim.Delay = append(anim.Delay, delay)
