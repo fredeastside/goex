@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"time"
 )
 
 var pc [256]byte
@@ -27,14 +28,15 @@ func init() {
 }
 
 func main() {
-	fmt.Println(pc)
-	fmt.Println(popCount(1024))
+	now := time.Now()
+	fmt.Println(popCount(1023))
+	fmt.Printf("%.10f", time.Since(now).Seconds())
+	now = time.Now()
+	fmt.Println(popCountLoop(1023))
+	fmt.Printf("%.10f", time.Since(now).Seconds())
 }
 
 func popCount(x uint64) int {
-	fmt.Printf("%b\n", x)
-	fmt.Printf("%b\n", x>>(0*8))
-	fmt.Println(byte(x >> (1 * 8)))
 	return int(pc[byte(x>>(0*8))] +
 		pc[byte(x>>(1*8))] +
 		pc[byte(x>>(2*8))] +
@@ -43,4 +45,13 @@ func popCount(x uint64) int {
 		pc[byte(x>>(5*8))] +
 		pc[byte(x>>(6*8))] +
 		pc[byte(x>>(7*8))])
+}
+
+func popCountLoop(x uint64) int {
+	res := byte(0)
+	for i := uint64(0); i < 8; i++ {
+		res += pc[byte(x>>(i*8))]
+	}
+
+	return int(res)
 }
