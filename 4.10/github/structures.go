@@ -23,3 +23,15 @@ type User struct {
 	Login   string
 	HTMLURL string `json:"html_url"`
 }
+
+func (r SearchIssueResult) Len() int {
+	return len(r.Items)
+}
+
+func (r SearchIssueResult) Swap(i, j int) {
+	r.Items[i], r.Items[j] = r.Items[j], r.Items[i]
+}
+
+func (r SearchIssueResult) Less(i, j int) bool {
+	return r.Items[j].CreatedAt.Before(r.Items[i].CreatedAt)
+}
