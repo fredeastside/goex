@@ -15,20 +15,28 @@ import (
 const TEXT_EDITOR = "vim"
 
 func main() {
-	var action, owner, repo, title, id string
+	var action, owner, repo, title string
+	var id int
 
 	flag.StringVar(&owner, "owner", "", "Owner of github repository.")
 	flag.StringVar(&repo, "repo", "", "Name of github repository.")
 	flag.StringVar(&action, "action", "", "Action with github issues.")
 	flag.StringVar(&title, "title", "", "Title of issue.")
-	flag.StringVar(&id, "id", "", "Id of issue.")
+	flag.IntVar(&id, "id", 0, "Id of issue.")
 	flag.Parse()
 
 	switch action {
 	case "create":
 		createIssue(owner, repo, title)
 	case "update":
-		updateIssue(owner, repo, id, title)
+		updateIssue(owner, repo, title, id)
+	case "close":
+		closeIssue(owner, repo, id)
+	case "lock":
+		_, err := github.Lock(owner, repo, id)
+		if err != nil {
+			fmt.Printf("Error: %v", err)
+		}
 	case "list":
 		printIssuesList(owner, repo)
 	default:
@@ -48,16 +56,24 @@ func createIssue(owner, repo, title string) {
 	fmt.Printf("Issue created with id %d", issue.Id)
 }
 
-func updateIssue(owner, repo, id, title string) {
+func updateIssue(owner, repo, title string, id int) {
 	content, err := getIssueBody(title)
 	if err != nil {
 		fmt.Printf("Error: %v", err)
 	}
-	issue, err := github.Update(owner, repo, id, &github.Issue{Title: title, Body: content})
+	issue, err := github.Update(owner, repo, &github.Issue{Id: id, Title: title, Body: content})
 	if err != nil {
 		fmt.Printf("Error: %v", err)
 	}
 	fmt.Printf("Issue updated with id %d", issue.Id)
+}
+
+func closeIssue(owner, repo string, id int) {
+	issue, err := github.Update(owner, repo, &github.Issue{Id: id, Title: "Close", Body: "Close", State: "closed"})
+	if err != nil {
+		fmt.Printf("Error: %v", err)
+	}
+	fmt.Printf("Issue closed with id %d", issue.Id)
 }
 
 func getIssueBody(title string) (string, error) {
